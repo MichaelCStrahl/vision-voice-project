@@ -1,8 +1,6 @@
-import 'react-native-reanimated';
-import { Slot } from 'expo-router';
+import 'react-native-reanimated'
+import { Slot } from 'expo-router'
 
 export default function RootLayout() {
-  return (
-    <Slot />
-  );
+  return <Slot />
 }
