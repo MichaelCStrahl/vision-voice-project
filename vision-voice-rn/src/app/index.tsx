@@ -3,6 +3,8 @@ import { CameraView } from 'expo-camera'
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, View } from 'react-native'
 
+import { HelpButton } from '@/components/help-button'
+
 export default function Home() {
   const cameraRef = useRef<CameraView>(null)
 
@@ -15,7 +17,13 @@ export default function Home() {
         animated
       />
       <View style={styles.cameraContainer}>
-        <CameraView ref={cameraRef} facing="back" style={styles.camera} />
+        <CameraView
+          ref={cameraRef}
+          facing="back"
+          style={styles.camera}
+          accessibilityElementsHidden
+        />
+        <HelpButton />
       </View>
     </View>
   )
@@ -26,6 +34,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cameraContainer: {
+    position: 'relative',
     flex: 1,
     width: '100%',
     height: '100%',

@@ -127,6 +127,10 @@ export const theme = {
     extrabold: '800',
     black: '900',
   },
+  zIndex: {
+    none: 0,
+    helpButton: 10,
+  },
   border: {
     none: 0,
     sm: 1,
