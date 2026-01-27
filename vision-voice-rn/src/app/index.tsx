@@ -3,6 +3,7 @@ import { CameraView } from 'expo-camera'
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, View } from 'react-native'
 
+import { Actions } from '@/components/actions'
 import { HelpButton } from '@/components/help-button'
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
           accessibilityElementsHidden
         />
         <HelpButton />
+        <Actions />
       </View>
     </View>
   )
