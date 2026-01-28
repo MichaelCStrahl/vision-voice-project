@@ -5,8 +5,8 @@ import { theme } from '@/theme'
 
 import { useTTS } from '@/hooks/use-tts'
 
-import AudioVisualizer from '@/components/audio-visualizer'
-import VoiceCommandButton from '@/components/voice-command-button'
+import { AudioVisualizer } from '@/components/audio-visualizer'
+import { VoiceCommandButton } from '@/components/voice-command-button'
 
 export function VoiceCommandActions() {
   const { isSpeaking } = useTTS()

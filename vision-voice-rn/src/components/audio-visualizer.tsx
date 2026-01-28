@@ -7,7 +7,7 @@ interface AudioVisualizerProps {
   isRecording: boolean
 }
 
-export default function AudioVisualizer({ isRecording }: AudioVisualizerProps) {
+export function AudioVisualizer({ isRecording }: AudioVisualizerProps) {
   const animatedValues = useRef([
     new Animated.Value(0),
     new Animated.Value(0),

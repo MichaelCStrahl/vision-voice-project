@@ -1,9 +1,11 @@
 import * as Speech from 'expo-speech'
 import { useCallback, useRef, useState } from 'react'
 
-export const DEFAULT_SPEECH_RATE = 1.0
-export const DEFAULT_SPEECH_PITCH = 1.0
-export const DEFAULT_SPEECH_LANGUAGE = 'pt-BR'
+import {
+  DEFAULT_SPEECH_LANGUAGE,
+  DEFAULT_SPEECH_RATE,
+  DEFAULT_SPEECH_PITCH,
+} from '@/constants'
 
 export interface SpeakOptions {
   interrupt?: boolean

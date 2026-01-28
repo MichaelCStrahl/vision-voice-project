@@ -17,7 +17,7 @@ type VoiceCommandButtonProps = TouchableOpacityProps & {
   variant?: 'primary' | 'secondary'
 }
 
-export default function VoiceCommandButton({
+export function VoiceCommandButton({
   children,
   isRecording,
   variant = 'primary',
