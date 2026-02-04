@@ -6,7 +6,6 @@ import {
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
-  ViewStyle,
 } from 'react-native'
 
 import { theme } from '@/theme'
@@ -20,17 +19,24 @@ type VoiceCommandButtonProps = TouchableOpacityProps & {
 export function VoiceCommandButton({
   children,
   isRecording,
-  variant = 'primary',
+  disabled,
+  onPressIn,
+  onPressOut,
   ...props
 }: VoiceCommandButtonProps) {
-  const containerStyle = styles[
-    `container${variant.charAt(0).toUpperCase() + variant.slice(1)}` as keyof typeof styles
-  ] as ViewStyle
+  const variant = isRecording ? 'secondary' : 'primary'
+
+  const containerStyle =
+    (variant === 'secondary' && styles.containerSecondary) ||
+    (variant === 'primary' && styles.containerPrimary)
 
   return (
     <TouchableOpacity
-      style={[styles.button, containerStyle]}
+      style={[styles.button, containerStyle, disabled && styles.disabled]}
       activeOpacity={0.8}
+      onPressIn={disabled ? undefined : onPressIn}
+      onPressOut={disabled ? undefined : onPressOut}
+      disabled={disabled}
       {...props}
     >
       {isRecording ? (
@@ -53,6 +59,9 @@ const styles = StyleSheet.create({
     height: theme.sizes['4xl'],
     borderRadius: theme.radii.md,
     gap: theme.spacing.sm,
+  },
+  disabled: {
+    opacity: theme.opacity.disabled,
   },
   text: {
     fontSize: theme.fontSizes['2xl'],

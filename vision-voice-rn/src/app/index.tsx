@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native'
 
 import { Actions } from '@/components/actions'
 import { HelpButton } from '@/components/help-button'
+import { PermissionsGate } from '@/components/permissions-gate'
 
 export default function Home() {
   const cameraRef = useRef<CameraView>(null)
@@ -17,16 +18,18 @@ export default function Home() {
         translucent
         animated
       />
-      <View style={styles.cameraContainer}>
-        <CameraView
-          ref={cameraRef}
-          facing="back"
-          style={styles.camera}
-          accessibilityElementsHidden
-        />
-        <HelpButton />
-        <Actions />
-      </View>
+      <PermissionsGate>
+        <View style={styles.cameraContainer}>
+          <CameraView
+            ref={cameraRef}
+            facing="back"
+            style={styles.camera}
+            accessibilityElementsHidden
+          />
+          <HelpButton />
+          <Actions />
+        </View>
+      </PermissionsGate>
     </View>
   )
 }
