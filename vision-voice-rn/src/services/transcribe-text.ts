@@ -53,21 +53,16 @@ export const transcribeText = async ({
     },
   }
 
-  try {
-    const response = await transcriptionApi.post<TranscriptionResponse>(
-      '/',
-      requestBody,
-      {
-        params: { key },
-        headers: {
-          'Content-Type': 'application/json',
-        },
+  const response = await transcriptionApi.post<TranscriptionResponse>(
+    '/',
+    requestBody,
+    {
+      params: { key },
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+    },
+  )
 
-    return response.data?.results?.[0]?.alternatives?.[0]?.transcript ?? ''
-  } catch (error) {
-    console.error('Error in transcription:', error)
-    return ''
-  }
+  return response.data?.results?.[0]?.alternatives?.[0]?.transcript ?? ''
 }

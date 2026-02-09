@@ -27,7 +27,7 @@ export default function Home() {
             accessibilityElementsHidden
           />
           <HelpButton />
-          <Actions />
+          <Actions cameraRef={cameraRef} />
         </View>
       </PermissionsGate>
     </View>

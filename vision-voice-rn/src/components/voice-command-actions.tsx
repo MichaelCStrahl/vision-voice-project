@@ -1,30 +1,29 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
 import { theme } from '@/theme'
 
-import { useSpeechToText } from '@/hooks/use-speech-to-text'
-
 import { AudioVisualizer } from '@/components/audio-visualizer'
 import { VoiceCommandButton } from '@/components/voice-command-button'
 
-export function VoiceCommandActions() {
-  const {
-    isRecording,
-    isTranscribing,
-    isProcessing,
-    startRecording,
-    stopRecording,
-    transcribedText,
-  } = useSpeechToText()
+type VoiceCommandActionsProps = {
+  isRecording: boolean
+  isTranscribing: boolean
+  isProcessing: boolean
+  isBusy?: boolean
+  onStartRecording: () => Promise<void>
+  onStopRecording: () => Promise<void>
+}
 
-  const isButtonDisabled = isProcessing || isTranscribing
-
-  useEffect(() => {
-    if (transcribedText) {
-      console.log(transcribedText)
-    }
-  }, [transcribedText])
+export function VoiceCommandActions({
+  isRecording,
+  isTranscribing,
+  isProcessing,
+  isBusy = false,
+  onStartRecording,
+  onStopRecording,
+}: VoiceCommandActionsProps) {
+  const isButtonDisabled = isProcessing || isTranscribing || isBusy
 
   return (
     <View style={styles.container}>
@@ -35,8 +34,8 @@ export function VoiceCommandActions() {
 
       <VoiceCommandButton
         isRecording={isRecording}
-        onPressIn={startRecording}
-        onPressOut={stopRecording}
+        onPressIn={onStartRecording}
+        onPressOut={onStopRecording}
         disabled={isButtonDisabled}
         accessibilityLabel={
           isRecording
