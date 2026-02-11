@@ -1,5 +1,4 @@
 import {
-  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -7,6 +6,7 @@ import {
   useState,
   type RefObject,
 } from 'react'
+import * as Haptics from 'expo-haptics'
 import { CameraView } from 'expo-camera'
 import { StyleSheet, Text, View } from 'react-native'
 
@@ -38,7 +38,11 @@ export function Actions({ cameraRef }: ActionsProps) {
   const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([])
   const [isCommandRunning, setIsCommandRunning] = useState(false)
 
-  const lastSpeechRef = useRef('')
+  const lastResponseRef = useRef('')
+  const lastResultTitleRef = useRef(resultTitle)
+  const lastResultModeRef = useRef<ResultMode>('text')
+  const lastResultTextRef = useRef('')
+  const lastDetectedObjectsRef = useRef<DetectedObject[]>([])
 
   const {
     isRecording,
@@ -66,12 +70,28 @@ export function Actions({ cameraRef }: ActionsProps) {
   const isImageProcessing = isCaptionLoading || isDetectionLoading
   const isBusy = isImageProcessing || isCommandRunning
 
-  const speakWithState = useCallback(
+  const speak = useCallback(
     (text: string, interrupt: boolean = false) => {
       ttsSpeak(text, { interrupt })
-      lastSpeechRef.current = text
     },
     [ttsSpeak],
+  )
+
+  const storeLastResult = useCallback(
+    (result: {
+      title: string
+      mode: ResultMode
+      text: string
+      objects: DetectedObject[]
+      speech: string
+    }) => {
+      lastResponseRef.current = result.speech
+      lastResultTitleRef.current = result.title
+      lastResultModeRef.current = result.mode
+      lastResultTextRef.current = result.text
+      lastDetectedObjectsRef.current = result.objects
+    },
+    [],
   )
 
   const takeSnapshot = useCallback(async () => {
@@ -94,25 +114,52 @@ export function Actions({ cameraRef }: ActionsProps) {
     setDetectedObjects([])
 
     try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
       const uri = await takeSnapshot()
       const caption = await getCaption(uri)
 
       if (!caption) {
         const message = 'Não foi possível gerar a descrição.'
         setResultText(message)
-        speakWithState(message, true)
+        speak(message, true)
+        storeLastResult({
+          title: 'Descrição do ambiente',
+          mode: 'text',
+          text: message,
+          objects: [],
+          speech: message,
+        })
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        )
         return
       }
 
       setResultText(caption)
-      speakWithState(caption, true)
+      speak(caption, true)
+      storeLastResult({
+        title: 'Descrição do ambiente',
+        mode: 'text',
+        text: caption,
+        objects: [],
+        speech: caption,
+      })
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     } catch (error) {
       const message = 'Erro ao capturar a imagem.'
       console.error(message, error)
       setResultText(message)
-      speakWithState(message, true)
+      speak(message, true)
+      storeLastResult({
+        title: 'Descrição do ambiente',
+        mode: 'text',
+        text: message,
+        objects: [],
+        speech: message,
+      })
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
     }
-  }, [getCaption, speakWithState, takeSnapshot])
+  }, [getCaption, speak, storeLastResult, takeSnapshot])
 
   const handleDetection = useCallback(async () => {
     setResultTitle('Objetos detectados')
@@ -121,21 +168,36 @@ export function Actions({ cameraRef }: ActionsProps) {
     setDetectedObjects([])
 
     try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
       const uri = await takeSnapshot()
       const objects = await getDetection(uri)
 
-      if (!objects || objects.length === 0) {
-        const message = 'Nenhum objeto foi identificado.'
+      const filteredObjects =
+        objects?.filter(
+          (obj) => typeof obj.confidence === 'number' && obj.confidence >= 0.5,
+        ) ?? []
+
+      if (filteredObjects.length === 0) {
+        const message = 'Nenhum objeto com confiança acima de 50%.'
         setResultMode('text')
         setResultText(message)
-        speakWithState(message, true)
+        speak(message, true)
+        storeLastResult({
+          title: 'Objetos detectados',
+          mode: 'text',
+          text: message,
+          objects: [],
+          speech: message,
+        })
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        )
         return
       }
 
-      setDetectedObjects(objects)
+      setDetectedObjects(filteredObjects)
 
-      const readable = objects
-        .slice(0, 4)
+      const readable = filteredObjects
         .map((obj) => obj.class)
         .filter(Boolean)
         .join(', ')
@@ -144,38 +206,62 @@ export function Actions({ cameraRef }: ActionsProps) {
         ? `Encontrei: ${readable}.`
         : 'Encontrei alguns objetos.'
 
-      speakWithState(speech, true)
+      speak(speech, true)
+      storeLastResult({
+        title: 'Objetos detectados',
+        mode: 'detection',
+        text: '',
+        objects: filteredObjects,
+        speech,
+      })
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     } catch (error) {
       const message = 'Erro ao capturar a imagem.'
       console.error(message, error)
       setResultMode('text')
       setResultText(message)
-      speakWithState(message, true)
+      speak(message, true)
+      storeLastResult({
+        title: 'Objetos detectados',
+        mode: 'text',
+        text: message,
+        objects: [],
+        speech: message,
+      })
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
     }
-  }, [getDetection, speakWithState, takeSnapshot])
+  }, [getDetection, speak, storeLastResult, takeSnapshot])
 
   const handleHelp = useCallback(() => {
     setResultTitle('Ajuda')
     setResultMode('text')
     setResultText(HELP_TEXT)
-    speakWithState(HELP_TEXT, true)
-  }, [speakWithState])
+    speak(HELP_TEXT, true)
+    storeLastResult({
+      title: 'Ajuda',
+      mode: 'text',
+      text: HELP_TEXT,
+      objects: [],
+      speech: HELP_TEXT,
+    })
+  }, [speak, storeLastResult])
 
   const handleRepeat = useCallback(() => {
-    if (!lastSpeechRef.current) {
+    if (!lastResponseRef.current) {
       const message = 'Nada para repetir.'
       setResultTitle('Repetir')
       setResultMode('text')
       setResultText(message)
-      speakWithState(message, true)
+      speak(message, true)
       return
     }
 
-    setResultTitle('Repetir')
-    setResultMode('text')
-    setResultText(lastSpeechRef.current)
-    speakWithState(lastSpeechRef.current, true)
-  }, [speakWithState])
+    setResultTitle(lastResultTitleRef.current)
+    setResultMode(lastResultModeRef.current)
+    setResultText(lastResultTextRef.current)
+    setDetectedObjects(lastDetectedObjectsRef.current)
+    speak(lastResponseRef.current, true)
+  }, [speak])
 
   const handleUnknown = useCallback(() => {
     const message =
@@ -183,17 +269,21 @@ export function Actions({ cameraRef }: ActionsProps) {
     setResultTitle('Comando')
     setResultMode('text')
     setResultText(message)
-    speakWithState(message, true)
-  }, [speakWithState])
+    speak(message, true)
+    storeLastResult({
+      title: 'Comando',
+      mode: 'text',
+      text: message,
+      objects: [],
+      speech: message,
+    })
+  }, [speak, storeLastResult])
 
   const handleVoiceCommand = useCallback(
     async (text: string) => {
       if (isBusy) {
         const message = 'Aguarde o comando anterior terminar.'
-        setResultTitle('Processando')
-        setResultMode('text')
-        setResultText(message)
-        speakWithState(message, true)
+        speak(message, true)
         return
       }
 
@@ -229,7 +319,7 @@ export function Actions({ cameraRef }: ActionsProps) {
       handleRepeat,
       handleUnknown,
       isBusy,
-      speakWithState,
+      speak,
     ],
   )
 
@@ -245,46 +335,91 @@ export function Actions({ cameraRef }: ActionsProps) {
 
   const resultContent = useMemo(() => {
     if (isImageProcessing) {
-      return <Text style={styles.resultCardText}>Analisando imagem...</Text>
+      return (
+        <Text
+          style={styles.resultCardText}
+          accessibilityRole="text"
+          accessibilityLiveRegion="polite"
+        >
+          Analisando imagem...
+        </Text>
+      )
     }
 
     if (errorText) {
-      return <Text style={styles.resultCardText}>{errorText}</Text>
+      return (
+        <Text
+          style={styles.resultCardText}
+          accessibilityRole="text"
+          accessibilityLiveRegion="assertive"
+        >
+          {errorText}
+        </Text>
+      )
     }
 
     if (resultMode === 'detection' && detectedObjects.length > 0) {
-      return (
-        <View style={styles.resultCardTextContainer}>
-          {detectedObjects.map((obj, index) => {
-            const confidence =
-              typeof obj.confidence === 'number'
-                ? `${(obj.confidence * 100).toFixed(1)}%`
-                : undefined
+      const summaryItems = detectedObjects
+        .map((obj) => {
+          if (typeof obj.confidence !== 'number') {
+            return obj.class
+          }
+          return `${obj.class} ${(obj.confidence * 100).toFixed(0)}%`
+        })
+        .filter(Boolean)
 
-            return (
-              <Fragment key={`${obj.class}-${index}`}>
-                <Text style={styles.resultCardTextItem}>
-                  {obj.class}
-                  {confidence ? `: ${confidence}` : ''}
-                </Text>
-                {index < detectedObjects.length - 1 && (
-                  <Text style={styles.resultCardTextItem}>{'  |  '}</Text>
-                )}
-              </Fragment>
-            )
-          })}
+      const summary = summaryItems.join(', ')
+      const displayText = summaryItems.join('  |  ')
+
+      return (
+        <View
+          style={styles.resultCardTextContainer}
+          accessibilityRole="text"
+          accessibilityLabel={`Objetos detectados: ${summary}`}
+          accessibilityLiveRegion="polite"
+        >
+          <Text style={styles.resultCardText}>{displayText}</Text>
         </View>
       )
     }
 
     const fallback = resultText || 'Aguardando comando de voz...'
-    return <Text style={styles.resultCardText}>{fallback}</Text>
+    return (
+      <Text
+        style={styles.resultCardText}
+        accessibilityRole="text"
+        accessibilityLiveRegion="polite"
+      >
+        {fallback}
+      </Text>
+    )
+  }, [detectedObjects, errorText, isImageProcessing, resultMode, resultText])
+
+  const accessibilitySummary = useMemo(() => {
+    if (isImageProcessing) return 'Analisando imagem.'
+    if (errorText) return errorText
+    if (resultMode === 'detection' && detectedObjects.length > 0) {
+      const summary = detectedObjects
+        .map((obj) => {
+          if (typeof obj.confidence !== 'number') {
+            return obj.class
+          }
+          return `${obj.class} ${(obj.confidence * 100).toFixed(0)}%`
+        })
+        .filter(Boolean)
+        .join(', ')
+      return `Objetos detectados: ${summary}`
+    }
+    return resultText || 'Aguardando comando de voz.'
   }, [detectedObjects, errorText, isImageProcessing, resultMode, resultText])
 
   return (
     <View style={styles.container}>
       <View style={styles.resultCardContainer}>
-        <ResultCard title={resultTitle} accessibilityLabel="Resultado">
+        <ResultCard
+          title={resultTitle}
+          accessibilityLabel={`Resultado. ${resultTitle}. ${accessibilitySummary}`}
+        >
           {resultContent}
         </ResultCard>
       </View>
@@ -293,8 +428,14 @@ export function Actions({ cameraRef }: ActionsProps) {
         isTranscribing={isTranscribing}
         isProcessing={isProcessing}
         isBusy={isBusy || isSpeaking}
-        onStartRecording={startRecording}
-        onStopRecording={stopRecording}
+        onStartRecording={async () => {
+          await Haptics.selectionAsync()
+          await startRecording()
+        }}
+        onStopRecording={async () => {
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          await stopRecording()
+        }}
       />
     </View>
   )
@@ -328,5 +469,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.md,
     color: theme.colors.gray[800],
     textAlign: 'center',
+    wordWrap: 'wrap',
   },
 })

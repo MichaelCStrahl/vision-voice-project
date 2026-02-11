@@ -1,9 +1,11 @@
+import * as Haptics from 'expo-haptics'
 import { HelpCircle } from 'lucide-react-native'
 import { StyleSheet, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { theme } from '@/theme'
-import { DEFAULT_SPEECH_RATE, useTTS } from '@/hooks/use-tts'
+
+import { useTTS } from '@/hooks/use-tts'
 
 export function HelpButton() {
   const insets = useSafeAreaInsets()
@@ -11,9 +13,10 @@ export function HelpButton() {
   const { isSpeaking, speak: ttsSpeak } = useTTS()
 
   const speakWithState = (text: string, interrupt: boolean = false) =>
-    ttsSpeak(text, { interrupt, rate: DEFAULT_SPEECH_RATE })
+    ttsSpeak(text, { interrupt })
 
-  const handlePress = () => {
+  const handlePress = async () => {
+    await Haptics.selectionAsync()
     if (isSpeaking) {
       ttsSpeak('Cancelando...', { interrupt: true })
     } else {

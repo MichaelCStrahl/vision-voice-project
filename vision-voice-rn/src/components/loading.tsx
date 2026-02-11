@@ -23,7 +23,12 @@ export const Loading = () => {
   })
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel="Carregando"
+    >
       <View style={styles.loaderContainer}>
         <Animated.View
           style={[

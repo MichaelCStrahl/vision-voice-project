@@ -24,19 +24,41 @@ export function VoiceCommandActions({
   onStopRecording,
 }: VoiceCommandActionsProps) {
   const isButtonDisabled = isProcessing || isTranscribing || isBusy
+  const accessibilityHint = isRecording
+    ? 'Solte para finalizar a gravação'
+    : isButtonDisabled
+      ? 'Aguarde o processamento'
+      : 'Pressione e segure para falar'
 
   return (
     <View style={styles.container}>
       {isRecording && <AudioVisualizer isRecording />}
 
-      {isProcessing && <Text style={styles.text}>Processando áudio...</Text>}
-      {isTranscribing && <Text style={styles.text}>Transcrevendo...</Text>}
+      {isProcessing && (
+        <Text
+          style={styles.text}
+          accessibilityRole="text"
+          accessibilityLiveRegion="polite"
+        >
+          Processando áudio...
+        </Text>
+      )}
+      {isTranscribing && (
+        <Text
+          style={styles.text}
+          accessibilityRole="text"
+          accessibilityLiveRegion="polite"
+        >
+          Transcrevendo...
+        </Text>
+      )}
 
       <VoiceCommandButton
         isRecording={isRecording}
         onPressIn={onStartRecording}
         onPressOut={onStopRecording}
         disabled={isButtonDisabled}
+        accessibilityHint={accessibilityHint}
         accessibilityLabel={
           isRecording
             ? 'Solte para finalizar'

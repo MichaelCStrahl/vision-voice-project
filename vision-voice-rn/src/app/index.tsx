@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import * as Haptics from 'expo-haptics'
 import { CameraView } from 'expo-camera'
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, View } from 'react-native'
@@ -25,6 +26,10 @@ export default function Home() {
             facing="back"
             style={styles.camera}
             accessibilityElementsHidden
+            accessibilityLabel="Câmera para detecção de objetos"
+            onTouchStart={async () => {
+              await Haptics.selectionAsync()
+            }}
           />
           <HelpButton />
           <Actions cameraRef={cameraRef} />

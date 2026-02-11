@@ -44,7 +44,11 @@ export function AudioVisualizer({ isRecording }: AudioVisualizerProps) {
   if (!isRecording) return null
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    >
       {animatedValues.map((value, index) => (
         <Animated.View
           key={index}

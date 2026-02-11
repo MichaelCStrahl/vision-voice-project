@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+import { translateText } from '@/services/translate-text'
 import { getObjects as getObjectsService } from '@/services/get-objects'
 
 type UseDetectionResult = {
@@ -28,8 +29,25 @@ export function useDetection(): UseDetectionResult {
     try {
       const objects = await getObjectsService({ uri: currentUri })
       if (requestId !== requestIdRef.current) return
-      setResult(JSON.stringify(objects))
-      return objects
+
+      const translatedObjects = await Promise.all(
+        objects.map(async (obj: DetectedObject) => {
+          if (!obj.class) return obj
+          try {
+            const translatedClass = await translateText({ text: obj.class })
+            return {
+              ...obj,
+              class: translatedClass || obj.class,
+            }
+          } catch {
+            return obj
+          }
+        }),
+      )
+
+      if (requestId !== requestIdRef.current) return
+      setResult(JSON.stringify(translatedObjects))
+      return translatedObjects
     } catch (err) {
       if (requestId !== requestIdRef.current) return
       setError(err instanceof Error ? err.message : 'Erro ao detectar objetos')
