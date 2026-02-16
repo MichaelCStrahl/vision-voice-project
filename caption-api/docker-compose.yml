@@ -1,0 +1,17 @@
+services:
+  captioning-api:
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./captioning-model:/app/captioning-model
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CAPTIONING_ARTIFACTS_DIR=captioning-model
+      - PORT=7860
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
