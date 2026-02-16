@@ -102,6 +102,7 @@ export function Actions({ cameraRef }: ActionsProps) {
     const photo = await cameraRef.current.takePictureAsync({
       quality: 0.7,
       skipProcessing: true,
+      shutterSound: false,
     })
 
     return photo.uri
