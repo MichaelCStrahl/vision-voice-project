@@ -1,0 +1,9 @@
+services:
+  object-detection-api:
+    build: .
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+    volumes:
+      - ./:/app
