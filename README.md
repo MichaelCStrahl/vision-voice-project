@@ -36,6 +36,13 @@ The app supports the following voice commands:
 
 ## Models
 
+### Test Repositories and Model Endpoints
+
+The following Hugging Face Spaces are used for testing the project models:
+
+- **Captioning**: https://huggingface.co/spaces/strahlmichael/caption-api
+- **Object Detection**: https://huggingface.co/spaces/strahlmichael/object-detection-api
+
 ### Object Detection Model
 
 - **Model**: YOLOv8n (Ultralytics)
