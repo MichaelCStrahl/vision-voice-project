@@ -4,8 +4,11 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios"
+    "prebuild": "expo prebuild --clean",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "build:android:apk": "sh -c 'set -a; [ -f .env ] && . ./.env; set +a; expo prebuild --platform android && cd android && ./gradlew assembleRelease'",
+    "build:ios:ipa": "sh -c 'set -a; [ -f .env ] && . ./.env; set +a; expo prebuild --platform ios && SCHEME=$(basename ios/*.xcodeproj .xcodeproj) && WORKSPACE=$(basename ios/*.xcworkspace) && xcodebuild -workspace \"ios/$WORKSPACE\" -scheme \"$SCHEME\" -configuration Release -sdk iphoneos -archivePath \"ios/build/$SCHEME.xcarchive\" archive && xcodebuild -exportArchive -archivePath \"ios/build/$SCHEME.xcarchive\" -exportPath ios/build -exportOptionsPlist ios/ExportOptions.plist'"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

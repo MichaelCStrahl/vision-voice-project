@@ -1,12 +1,11 @@
 {
   "expo": {
-    "name": "vision-voice-rn",
+    "name": "Vision Voice",
     "slug": "vision-voice-rn",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "visionvoicern",
-    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./src/assets/images/splash-icon.png",
@@ -14,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.michaelstrahl.visionvoicern"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +22,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.michaelstrahl.visionvoicern"
     },
     "web": {
       "bundler": "metro",
